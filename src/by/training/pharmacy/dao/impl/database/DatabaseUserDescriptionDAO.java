@@ -70,9 +70,9 @@ public class DatabaseUserDescriptionDAO implements UserDescriptionDAO {
 
     private UserDescription resultSetToUserDescription(ResultSet resultSet) throws SQLException {
         UserDescription userDescription = new UserDescription();
-        userDescription.setUserLogin(resultSet.getString("sd_user_login"));
-        userDescription.setSpecialization(resultSet.getString("sd_specialization"));
-        userDescription.setDescription(resultSet.getString("sd_description"));
+        userDescription.setUserLogin(resultSet.getString(TableColumn.STAFF_USER_LOGIN));
+        userDescription.setSpecialization(resultSet.getString(TableColumn.USER_SPECIALIZATION));
+        userDescription.setDescription(resultSet.getString(TableColumn.USER_DESCRIPTION));
 
         return userDescription;
     }

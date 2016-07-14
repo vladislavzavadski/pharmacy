@@ -26,7 +26,7 @@ public class DatabaseDrugManufacturerDAOTest {
 
     @Test
     public void getManufacturesByNameTest() throws Exception{
-        List<DrugManufacturer> expected = getManufacturerList(DatabaseDAOTestConstant.GET_MANUFACTURES_BY_NAME_QUERY, '%'+DatabaseDAOTestConstant.MANUFACTURER_NAME_2+'%', DatabaseDAOTestConstant.LIMIT, DatabaseDAOTestConstant.START_FROM);
+        List<DrugManufacturer> expected = getManufacturerList(DatabaseDAOTestConstant.GET_MANUFACTURES_BY_NAME_QUERY, DatabaseDAOTestConstant.MANUFACTURER_NAME_2, DatabaseDAOTestConstant.LIMIT, DatabaseDAOTestConstant.START_FROM);
         DatabaseDrugManufacturerDao databaseDrugManufacturerDao = new DatabaseDrugManufacturerDao();
         List<DrugManufacturer> actual = databaseDrugManufacturerDao.getManufacturesByName(DatabaseDAOTestConstant.MANUFACTURER_NAME_2, DatabaseDAOTestConstant.LIMIT, DatabaseDAOTestConstant.START_FROM);
         assertEquals(expected, actual);
@@ -73,33 +73,20 @@ public class DatabaseDrugManufacturerDAOTest {
         databaseDrugManufacturerDao.insertDrugManufacturer(drugManufacturer);
     }
 
-    DrugManufacturer resultSetToManufacturer(ResultSet resultSet) {
-        DrugManufacturer drugManufacturer = new DrugManufacturer();
-
-        try {
-            drugManufacturer.setId(resultSet.getInt("dm_id"));
-        } catch (SQLException e) {
-            drugManufacturer.setId(0);
+    private List<DrugManufacturer> resultSetToDrugManufacturer(ResultSet resultSet) throws SQLException {
+        List<DrugManufacturer> result = new ArrayList<>();
+        while (resultSet.next()) {
+            DrugManufacturer drugManufacturer = new DrugManufacturer();
+            drugManufacturer.setId(resultSet.getInt(TableColumn.DRUG_MANUFACTURE_ID));
+            drugManufacturer.setName(resultSet.getString(TableColumn.DRUG_MANUFACTURE_NAME));
+            drugManufacturer.setDescription(resultSet.getString(TableColumn.DRUG_MANUFACTURE_DESCRIPTION));
+            drugManufacturer.setCountry(resultSet.getString(TableColumn.DRUG_MANUFACTURE_COUNTRY));
+            result.add(drugManufacturer);
         }
-        try {
-            drugManufacturer.setName(resultSet.getString("dm_name"));
-        } catch (SQLException e) {
-            drugManufacturer.setName(null);
-        }
-        try {
-            drugManufacturer.setDescription(resultSet.getString("dm_description"));
-        } catch (SQLException e) {
-            drugManufacturer.setDescription(null);
-        }
-        try {
-            drugManufacturer.setCountry(resultSet.getString("dm_country"));
-        } catch (SQLException e) {
-            drugManufacturer.setCountry(null);
-        }
-        return drugManufacturer;
+        return result;
     }
 
-    public DrugManufacturer getManufacturerById(int drugId){
+    private DrugManufacturer getManufacturerById(int drugId){
         DrugManufacturer result = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -110,7 +97,7 @@ public class DatabaseDrugManufacturerDAOTest {
             preparedStatement.setInt(1, drugId);
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next()) {
-                result = resultSetToManufacturer(resultSet);
+                result = resultSetToDrugManufacturer(resultSet).get(0);
             }
             return result;
 
@@ -119,12 +106,15 @@ public class DatabaseDrugManufacturerDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }
@@ -132,8 +122,8 @@ public class DatabaseDrugManufacturerDAOTest {
 
     }
 
-    public List<DrugManufacturer> getManufacturerList(String query, String name, int limit, int startFrom){
-        List<DrugManufacturer> result = new ArrayList<>();
+    private List<DrugManufacturer> getManufacturerList(String query, String name, int limit, int startFrom){
+        List<DrugManufacturer> result;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -144,9 +134,7 @@ public class DatabaseDrugManufacturerDAOTest {
             preparedStatement.setInt(2, limit);
             preparedStatement.setInt(3, startFrom);
             resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                result.add(resultSetToManufacturer(resultSet));
-            }
+            result = resultSetToDrugManufacturer(resultSet);
             return result;
 
         } catch (SQLException e) {
@@ -154,12 +142,15 @@ public class DatabaseDrugManufacturerDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }

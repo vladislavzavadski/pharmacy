@@ -24,10 +24,8 @@ public class DatabaseDrugClassDAO implements DrugClassDAO {
     private static final String INSERT_DRUG_CLASS_QUERY = "insert into drug_classes (dr_class_name, dr_class_description) VALUES(?,?);";
     private static final String UPDATE_DRUG_CLASS_QUERY = "update drug_classes set dr_class_name=?, dr_class_description=? WHERE dr_class_name=?;";
     private static final String DELETE_DRUG_CLASS_QUERY = "delete from drug_classes where dr_class_name=?;";
-    private static final Logger logger = LogManager.getLogger(DatabaseDrugClassDAO.class);
-    protected DatabaseDrugClassDAO() throws DaoException {
 
-    }
+    private static final Logger logger = LogManager.getLogger(DatabaseDrugClassDAO.class);
 
     @Override
     public DrugClass getDrugClassByName(String name) throws DaoException {
@@ -57,7 +55,6 @@ public class DatabaseDrugClassDAO implements DrugClassDAO {
     @Override
     public void updateDrugClass(DrugClass drugClass, String oldDrugName) throws DaoException {
         try(DatabaseOperation databaseOperation  = new DatabaseOperation(UPDATE_DRUG_CLASS_QUERY, drugClass.getName(), drugClass.getDescription(), oldDrugName)) {
-
             databaseOperation.invokeWriteOperation();
         } catch (Exception e) {
             logger.error("Method: DatabaseDrugClassDAO.updateDrugClass", e);
@@ -80,8 +77,8 @@ public class DatabaseDrugClassDAO implements DrugClassDAO {
         List<DrugClass> result = new ArrayList<>();
         while (resultSet.next()) {
             DrugClass drugClass = new DrugClass();
-            drugClass.setName(resultSet.getString("dr_class_name"));
-            drugClass.setDescription(resultSet.getString("dr_class_description"));
+            drugClass.setName(resultSet.getString(TableColumn.DRUG_CLASS_NAME));
+            drugClass.setDescription(resultSet.getString(TableColumn.DRUG_CLASS_DESCRIPTION));
             result.add(drugClass);
         }
         return result;

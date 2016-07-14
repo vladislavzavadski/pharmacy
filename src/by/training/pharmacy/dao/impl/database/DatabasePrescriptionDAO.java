@@ -184,7 +184,7 @@ public class DatabasePrescriptionDAO implements PrescriptionDAO {
         }
     }
 
-    protected List<Prescription> resultSetToPrescription(ResultSet resultSet) throws SQLException {
+    private List<Prescription> resultSetToPrescription(ResultSet resultSet) throws SQLException {
         List<Prescription> result = new ArrayList<>();
         while (resultSet.next()) {
             Prescription prescription = new Prescription();
@@ -194,18 +194,18 @@ public class DatabasePrescriptionDAO implements PrescriptionDAO {
             prescription.setDoctor(doctor);
             prescription.setClient(client);
             prescription.setDoctor(doctor);
-            prescription.setAppointmentDate(resultSet.getDate("pr_appointment_date"));
-            prescription.setExpirationDate(resultSet.getDate("pr_expiration_date"));
-            prescription.setDrugCount(resultSet.getShort("pr_drug_count"));
-            prescription.setDrugDosage(resultSet.getShort("pr_drug_dosage"));
-            doctor.setFirstName(resultSet.getString("doc_first_name"));
-            doctor.setSecondName(resultSet.getString("doc_second_name"));
-            doctor.setLogin(resultSet.getString("doc_login"));
-            drug.setName(resultSet.getString("dr_name"));
-            drug.setId(resultSet.getInt("dr_id"));
-            client.setLogin(resultSet.getNString("us_login"));
-            client.setFirstName(resultSet.getString("us_first_name"));
-            client.setSecondName(resultSet.getString("us_second_name"));
+            prescription.setAppointmentDate(resultSet.getDate(TableColumn.PRESCRIPTION_APPOINTMENT_DATE));
+            prescription.setExpirationDate(resultSet.getDate(TableColumn.PRESCRIPTION_EXPIRATION_DATE));
+            prescription.setDrugCount(resultSet.getShort(TableColumn.PRESCRIPTION_DRUG_COUNT));
+            prescription.setDrugDosage(resultSet.getShort(TableColumn.PRESCRIPTION_DRUG_DOSAGE));
+            doctor.setFirstName(resultSet.getString(TableColumn.DOCTOR_FIRST_NAME));
+            doctor.setSecondName(resultSet.getString(TableColumn.DOCTOR_SECOND_NAME));
+            doctor.setLogin(resultSet.getString(TableColumn.DOCTOR_LOGIN));
+            drug.setName(resultSet.getString(TableColumn.DRUG_NAME));
+            drug.setId(resultSet.getInt(TableColumn.DRUG_ID));
+            client.setLogin(resultSet.getNString(TableColumn.USER_LOGIN));
+            client.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            client.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
             result.add(prescription);
         }
         return result;

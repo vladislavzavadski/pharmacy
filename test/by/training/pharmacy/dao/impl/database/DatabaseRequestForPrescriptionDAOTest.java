@@ -38,8 +38,8 @@ public class DatabaseRequestForPrescriptionDAOTest {
     @Test
     public void getRequestsByDoctorTest() throws Exception{
         DatabaseRequestForPrescriptionDAO databaseRequestForPrescriptionDAO = new DatabaseRequestForPrescriptionDAO();
-        List<RequestForPrescription> actual = databaseRequestForPrescriptionDAO.getRequestsByDoctor("andrei_leshkevich", 0, 10);
-        List<RequestForPrescription> expected = getRequstList("select cl.us_login, dr_id, re_doctor, re_id, re_prolong_to, re_request_date, re_clients_comment, re_doctors_comment, dr_name, cl.us_first_name, cl.us_second_name, doc.us_first_name as doc_first_name, doc.us_second_name as doc_second_name, doc.us_login as doc_login  from requests_for_prescriptions inner join drugs on dr_id = re_drug_id inner join users as cl on re_client_login = cl.us_login inner join users as doc on re_doctor = doc.us_login WHERE re_doctor=? LIMIT ?, ?;", "andrei_leshkevich", 0, 10);
+        List<RequestForPrescription> actual = databaseRequestForPrescriptionDAO.getRequestsByDoctor(DatabaseDAOTestConstant.USER_LOGIN_6, DatabaseDAOTestConstant.START_FROM, DatabaseDAOTestConstant.LIMIT);
+        List<RequestForPrescription> expected = getRequstList(DatabaseDAOTestConstant.GET_PRESCRIPTION_BY_DOCTOR, DatabaseDAOTestConstant.USER_LOGIN_6, DatabaseDAOTestConstant.START_FROM, DatabaseDAOTestConstant.LIMIT);
         assertEquals(expected, actual);
     }
 
@@ -93,76 +93,36 @@ public class DatabaseRequestForPrescriptionDAOTest {
         databaseRequestForPrescriptionDAO.insertRequest(temp);
     }
 
-    public RequestForPrescription resultSetToRequest(ResultSet resultSet) {
-        RequestForPrescription requestForPrescription = new RequestForPrescription();
-        User doctor = new User();
-        requestForPrescription.setDoctor(doctor);
-        try {
-            requestForPrescription.setId(resultSet.getInt("re_id"));
-        } catch (SQLException e) {
-            requestForPrescription.setId(0);
+    private List<RequestForPrescription> resultSetToRequest(ResultSet resultSet) throws SQLException {
+        List<RequestForPrescription> result = new ArrayList<>();
+        while (resultSet.next()) {
+            RequestForPrescription requestForPrescription = new RequestForPrescription();
+            User doctor = new User();
+            User client = new User();
+            Drug drug = new Drug();
+            requestForPrescription.setClient(client);
+            requestForPrescription.setDrug(drug);
+            requestForPrescription.setDoctor(doctor);
+            requestForPrescription.setId(resultSet.getInt(TableColumn.REQUEST_ID));
+            requestForPrescription.setProlongDate(resultSet.getDate(TableColumn.REQUEST_PROLONG_TO));
+            requestForPrescription.setRequestDate(resultSet.getDate(TableColumn.REQUEST_DATE));
+            requestForPrescription.setRequestStatus(RequestStatus.valueOf(resultSet.getString(TableColumn.REQUEST_STATUS).toUpperCase()));
+            requestForPrescription.setClientComment(resultSet.getString(TableColumn.REQUEST_CLIENT_COMMENT));
+            requestForPrescription.setDoctorComment(resultSet.getString(TableColumn.REQUEST_DOCTOR_COMMENT));
+            doctor.setFirstName(resultSet.getString(TableColumn.DOCTOR_FIRST_NAME));
+            doctor.setSecondName(resultSet.getString(TableColumn.DOCTOR_SECOND_NAME));
+            doctor.setLogin(resultSet.getString(TableColumn.DOCTOR_LOGIN));
+            client.setLogin(resultSet.getString(TableColumn.USER_LOGIN));
+            client.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            client.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
+            drug.setId(resultSet.getInt(TableColumn.DRUG_ID));
+            drug.setName(resultSet.getString(TableColumn.DRUG_NAME));
+            result.add(requestForPrescription);
         }
-
-        try {
-            requestForPrescription.setProlongDate(resultSet.getDate("re_prolong_to"));
-        } catch (SQLException e) {
-            requestForPrescription.setProlongDate(null);
-        }
-
-        try {
-            requestForPrescription.setRequestDate(resultSet.getDate("re_request_date"));
-        } catch (SQLException e) {
-            requestForPrescription.setRequestDate(null);
-        }
-
-        try {
-            requestForPrescription.setRequestStatus(RequestStatus.valueOf(resultSet.getString("re_status").toUpperCase()));
-        } catch (SQLException e) {
-            requestForPrescription.setRequestStatus(null);
-        }
-
-        try {
-            requestForPrescription.setClientComment(resultSet.getString("re_clients_comment"));
-        } catch (SQLException e) {
-            requestForPrescription.setClientComment(null);
-        }
-        try {
-            requestForPrescription.setDoctorComment(resultSet.getString("re_doctors_comment"));
-        } catch (SQLException e) {
-            requestForPrescription.setDoctorComment(null);
-        }
-        try {
-            DatabaseDAO<User> databaseDAO = new DatabaseUserDAO();
-            requestForPrescription.setClient(databaseDAO.resultSetToDomain(resultSet));
-        } catch (DaoException e) {
-            requestForPrescription.setClient(null);
-        }
-
-        try {
-            DatabaseDAO<Drug> databaseDAO = new DatabaseDrugDAO();
-            requestForPrescription.setDrug(databaseDAO.resultSetToDomain(resultSet));
-        } catch (DaoException e) {
-            requestForPrescription.setDrug(null);
-        }
-        try {
-            doctor.setFirstName(resultSet.getString("doc_first_name"));
-        } catch (SQLException e) {
-            doctor.setFirstName(null);
-        }
-        try {
-            doctor.setSecondName(resultSet.getString("doc_second_name"));
-        } catch (SQLException e) {
-            doctor.setSecondName(null);
-        }
-        try {
-            doctor.setLogin(resultSet.getString("doc_login"));
-        } catch (SQLException e) {
-            doctor.setLogin(null);
-        }
-        return requestForPrescription;
+        return result;
     }
 
-    public RequestForPrescription getUniqueRequest(String query, Object ... params){
+    private RequestForPrescription getUniqueRequest(String query, Object ... params){
         RequestForPrescription result = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -174,7 +134,7 @@ public class DatabaseRequestForPrescriptionDAOTest {
                 preparedStatement.setObject(i+1, params[i]);
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next()) {
-                result = resultSetToRequest(resultSet);
+                result = resultSetToRequest(resultSet).get(0);
             }
             return result;
 
@@ -183,20 +143,23 @@ public class DatabaseRequestForPrescriptionDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }
         }
     }
 
-    public List<RequestForPrescription> getRequstList(String query, Object... params){
-        List<RequestForPrescription> result = new ArrayList<>();
+    private List<RequestForPrescription> getRequstList(String query, Object... params){
+        List<RequestForPrescription> result;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -207,9 +170,9 @@ public class DatabaseRequestForPrescriptionDAOTest {
                 preparedStatement.setObject(i+1, params[i]);
             }
             resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                result.add(resultSetToRequest(resultSet));
-            }
+
+            result = resultSetToRequest(resultSet);
+
             return result;
 
         } catch (SQLException e) {
@@ -217,12 +180,15 @@ public class DatabaseRequestForPrescriptionDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }

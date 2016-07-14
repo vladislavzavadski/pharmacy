@@ -87,7 +87,7 @@ public class DatabaseUserDAO implements UserDAO {
     public List<User> searchUsersByName(String firstName, String secondName, int limit, int startFrom) throws DaoException {
 
         List<User> users;
-        try (DatabaseOperation databaseOperation = new DatabaseOperation(SEARCH_USERS_QUERY, '%'+firstName+'%', '%'+secondName+'%', limit, startFrom)){
+        try (DatabaseOperation databaseOperation = new DatabaseOperation(SEARCH_USERS_QUERY, firstName, secondName, limit, startFrom)){
             ResultSet resultSet = databaseOperation.invokeReadOperation();
             users = resultSetToUser(resultSet);
             return users;
@@ -154,16 +154,15 @@ public class DatabaseUserDAO implements UserDAO {
             User user = new User();
             UserDescription userDescription = new UserDescription();
             user.setUserDescription(userDescription);
-            user.setLogin(resultSet.getString("us_login"));
-            user.setPassword(resultSet.getString("us_password"));
-            user.setUserRole(UserRole.valueOf(resultSet.getString("us_group").toUpperCase()));
-            user.setFirstName(resultSet.getString("us_first_name"));
-            user.setSecondName(resultSet.getString("us_second_name"));
-            user.setMail(resultSet.getString("us_mail"));
-            user.setPhone(resultSet.getString("us_phone"));
-            user.setUserImage(resultSet.getBytes("us_image"));
-            userDescription.setDescription(resultSet.getString("sd_description"));
-            userDescription.setSpecialization(resultSet.getString("sd_specialization"));
+            user.setLogin(resultSet.getString(TableColumn.USER_LOGIN));
+            user.setUserRole(UserRole.valueOf(resultSet.getString(TableColumn.USER_GROUP).toUpperCase()));
+            user.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            user.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
+            user.setMail(resultSet.getString(TableColumn.USER_MAIL));
+            user.setPhone(resultSet.getString(TableColumn.USER_PHONE));
+            user.setUserImage(resultSet.getBytes(TableColumn.USER_IMAGE));
+            userDescription.setDescription(resultSet.getString(TableColumn.USER_DESCRIPTION));
+            userDescription.setSpecialization(resultSet.getString(TableColumn.USER_SPECIALIZATION));
         }
         return result;
     }

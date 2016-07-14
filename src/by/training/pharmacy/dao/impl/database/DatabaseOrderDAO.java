@@ -33,9 +33,7 @@ public class DatabaseOrderDAO implements OrderDAO {
     private static final String DELETE_ORDER_QUERY = "delete from orders where or_id=?;";
     private static final String UPDATE_ORDER_QUERY = "UPDATE orders SET or_drug_id=?, or_drug_count=?, or_drug_dosage=?, or_status=? WHERE or_id=?";
     private static final Logger logger = LogManager.getLogger(DatabaseOrderDAO.class);
-    protected DatabaseOrderDAO() throws DaoException {
 
-    }
 
     @Override
     public List<Order> getUserOrders(String userLogin, int limit, int startFrom) throws DaoException {
@@ -98,6 +96,7 @@ public class DatabaseOrderDAO implements OrderDAO {
         try (DatabaseOperation databaseOperation = new DatabaseOperation()){
             switch (period) {
                 case AFTER_DATE: {
+                    databaseOperation.init(GET_ORDERS_BY_DATE_AFTER_QUERY, date, limit, startFrom);
                     break;
                 }
                 case BEFORE_DATE: {
@@ -121,7 +120,8 @@ public class DatabaseOrderDAO implements OrderDAO {
 
     @Override
     public void updateOrder(Order order) throws DaoException {
-        try (DatabaseOperation databaseOperation = new DatabaseOperation(UPDATE_ORDER_QUERY, order.getDrug().getId(), order.getDrugCount(), order.getDrugDosage(), order.getOrderStatus().toString().toLowerCase(), order.getId())){
+        try (DatabaseOperation databaseOperation = new DatabaseOperation(UPDATE_ORDER_QUERY, order.getDrug().getId(), order.getDrugCount(), order.getDrugDosage(),
+                order.getOrderStatus().toString().toLowerCase(), order.getId())){
             databaseOperation.invokeWriteOperation();
         } catch (Exception e) {
             logger.error("Method: DatabaseOrderDAO.updateOrder", e);
@@ -133,7 +133,8 @@ public class DatabaseOrderDAO implements OrderDAO {
 
     @Override
     public void insertOrder(Order order) throws DaoException {
-        try (DatabaseOperation databaseOperation = new DatabaseOperation(INSERT_ORDER_QUERY, order.getId(), order.getClient().getLogin(), order.getDrug().getId(), order.getDrugCount(), order.getDrugDosage(), order.getOrderStatus().toString().toLowerCase(), order.getOrderDate())){
+        try (DatabaseOperation databaseOperation = new DatabaseOperation(INSERT_ORDER_QUERY, order.getId(), order.getClient().getLogin(), order.getDrug().getId(),
+                order.getDrugCount(), order.getDrugDosage(), order.getOrderStatus().toString().toLowerCase(), order.getOrderDate())){
             databaseOperation.invokeWriteOperation();
         } catch (Exception e) {
             logger.error("Method: DatabaseOrderDAO.insertOrder", e);
@@ -159,14 +160,14 @@ public class DatabaseOrderDAO implements OrderDAO {
             User user = new User();
             order.setClient(user);
             order.setDrug(drug);
-            order.setId(resultSet.getInt("or_id"));
-            order.setDrugCount(resultSet.getDouble("or_drug_count"));
-            order.setDrugDosage(resultSet.getShort("or_drug_dosage"));
-            order.setOrderDate(resultSet.getDate("or_date"));
-            order.setOrderStatus(OrderStatus.valueOf(resultSet.getString("or_status").toUpperCase()));
-            user.setLogin(resultSet.getString("us_login"));
-            user.setFirstName(resultSet.getString("us_first_name"));
-            user.setSecondName(resultSet.getString("us_second_name"));
+            order.setId(resultSet.getInt(TableColumn.ORDER_ID));
+            order.setDrugCount(resultSet.getDouble(TableColumn.ORDER_DRUG_COUNT));
+            order.setDrugDosage(resultSet.getShort(TableColumn.ORDER_DRUG_DOSAGE));
+            order.setOrderDate(resultSet.getDate(TableColumn.ORDER_DATE));
+            order.setOrderStatus(OrderStatus.valueOf(resultSet.getString(TableColumn.ORDER_STATUS).toUpperCase()));
+            user.setLogin(resultSet.getString(TableColumn.USER_LOGIN));
+            user.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            user.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
             result.add(order);
         }
         return result;

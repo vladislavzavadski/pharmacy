@@ -54,29 +54,11 @@ public class DatabaseUserDescriptionTest {
         databaseUserDescriptionDAO.insertUserDescription(temp);
     }
 
-    protected UserDescription resultSetToUserDescription(ResultSet resultSet) {
+    private UserDescription resultSetToUserDescription(ResultSet resultSet) throws SQLException {
         UserDescription userDescription = new UserDescription();
-        try {
-            userDescription.setUserLogin(resultSet.getString("sd_user_login"));
-        } catch (SQLException e) {
-            try {
-                userDescription.setUserLogin(resultSet.getString("us_login"));
-            } catch (SQLException ex){
-                userDescription.setUserLogin(null);
-            }
-        }
-
-        try {
-            userDescription.setSpecialization(resultSet.getString("sd_specialization"));
-        } catch (SQLException e) {
-            userDescription.setSpecialization(null);
-        }
-
-        try {
-            userDescription.setDescription(resultSet.getString("sd_description"));
-        } catch (SQLException e) {
-            userDescription.setDescription(null);
-        }
+        userDescription.setUserLogin(resultSet.getString(TableColumn.STAFF_USER_LOGIN));
+        userDescription.setSpecialization(resultSet.getString(TableColumn.USER_SPECIALIZATION));
+        userDescription.setDescription(resultSet.getString(TableColumn.USER_DESCRIPTION));
 
         return userDescription;
     }
@@ -102,12 +84,15 @@ public class DatabaseUserDescriptionTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }

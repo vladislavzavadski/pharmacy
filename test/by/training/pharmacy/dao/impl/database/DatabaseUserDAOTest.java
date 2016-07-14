@@ -55,7 +55,7 @@ public class DatabaseUserDAOTest {
     public void searchUserByNameTest() throws Exception{
         DatabaseUserDAO databaseUserDAO = new DatabaseUserDAO();
         List<User> actual = databaseUserDAO.searchUsersByName(DatabaseDAOTestConstant.USER_FIRST_NAME_2, DatabaseDAOTestConstant.USER_SECOND_NAME_2, DatabaseDAOTestConstant.LIMIT, DatabaseDAOTestConstant.START_FROM);
-        List<User> expected = getUserList(DatabaseDAOTestConstant.SEARCH_USER_BY_NAME_QUERY, "%"+DatabaseDAOTestConstant.USER_FIRST_NAME_2+"%", "%"+DatabaseDAOTestConstant.USER_SECOND_NAME_2+"%", DatabaseDAOTestConstant.LIMIT, DatabaseDAOTestConstant.START_FROM);
+        List<User> expected = getUserList(DatabaseDAOTestConstant.SEARCH_USER_BY_NAME_QUERY, DatabaseDAOTestConstant.USER_FIRST_NAME_2, DatabaseDAOTestConstant.USER_SECOND_NAME_2, DatabaseDAOTestConstant.LIMIT, DatabaseDAOTestConstant.START_FROM);
         assertEquals(expected, actual);
     }
 
@@ -99,65 +99,26 @@ public class DatabaseUserDAOTest {
 
     }
 
-    public User resultSetToUser(ResultSet resultSet){
-        User user = new User();
-        UserDescription userDescription = new UserDescription();
-        user.setUserDescription(userDescription);
-
-        try {
-            user.setLogin(resultSet.getString("us_login"));
-        } catch (SQLException e) {
-            user.setLogin(null);
+    private List<User> resultSetToUser(ResultSet resultSet) throws SQLException {
+        List<User> result = new ArrayList<>();
+        while (resultSet.next()) {
+            User user = new User();
+            UserDescription userDescription = new UserDescription();
+            user.setUserDescription(userDescription);
+            user.setLogin(resultSet.getString(TableColumn.USER_LOGIN));
+            user.setUserRole(UserRole.valueOf(resultSet.getString(TableColumn.USER_GROUP).toUpperCase()));
+            user.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            user.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
+            user.setMail(resultSet.getString(TableColumn.USER_MAIL));
+            user.setPhone(resultSet.getString(TableColumn.USER_PHONE));
+            user.setUserImage(resultSet.getBytes(TableColumn.USER_IMAGE));
+            userDescription.setDescription(resultSet.getString(TableColumn.USER_DESCRIPTION));
+            userDescription.setSpecialization(resultSet.getString(TableColumn.USER_SPECIALIZATION));
         }
-        try {
-            user.setPassword(resultSet.getString("us_password"));
-        } catch (SQLException e) {
-            user.setPassword(null);
-        }
-        try {
-            user.setUserRole(UserRole.valueOf(resultSet.getString("us_group").toUpperCase()));
-        } catch (SQLException e) {
-            user.setUserRole(null);
-        }
-        try {
-            user.setFirstName(resultSet.getString("us_first_name"));
-        } catch (SQLException e) {
-            user.setFirstName(null);
-        }
-        try {
-            user.setSecondName(resultSet.getString("us_second_name"));
-        } catch (SQLException e) {
-            user.setSecondName(null);
-        }
-        try {
-            user.setMail(resultSet.getString("us_mail"));
-        } catch (SQLException e) {
-            user.setMail(null);
-        }
-        try {
-            user.setPhone(resultSet.getString("us_phone"));
-        } catch (SQLException e) {
-            user.setPhone(null);
-        }
-        try {
-            user.setUserImage(resultSet.getBytes("us_image"));
-        } catch (SQLException e) {
-            user.setUserImage(null);
-        }
-        try {
-            userDescription.setDescription(resultSet.getString("sd_description"));
-        } catch (SQLException e) {
-            userDescription.setDescription(null);
-        }
-        try {
-            userDescription.setSpecialization(resultSet.getString("sd_specialization"));
-        } catch (SQLException e) {
-            userDescription.setSpecialization(null);
-        }
-        return user;
+        return result;
     }
 
-    public User getUniqueUser(String query, Object ... params){
+    private User getUniqueUser(String query, Object ... params){
         User result = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -169,7 +130,7 @@ public class DatabaseUserDAOTest {
                 preparedStatement.setObject(i+1, params[i]);
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next()) {
-                result = resultSetToUser(resultSet);
+                result = resultSetToUser(resultSet).get(0);
             }
             return result;
 
@@ -178,20 +139,23 @@ public class DatabaseUserDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }
         }
     }
 
-    public List<User> getUserList(String query, Object... params){
-        List<User> result = new ArrayList<>();
+    private List<User> getUserList(String query, Object... params){
+        List<User> result;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -202,9 +166,9 @@ public class DatabaseUserDAOTest {
                 preparedStatement.setObject(i+1, params[i]);
             }
             resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                result.add(resultSetToUser(resultSet));
-            }
+
+            result = resultSetToUser(resultSet);
+
             return result;
 
         } catch (SQLException e) {
@@ -212,12 +176,15 @@ public class DatabaseUserDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }

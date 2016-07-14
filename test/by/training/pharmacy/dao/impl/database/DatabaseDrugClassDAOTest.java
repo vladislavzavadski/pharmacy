@@ -58,7 +58,7 @@ public class DatabaseDrugClassDAOTest {
         databaseDrugClassDAO.insertDrugClass(drugClass);
     }
 
-    public DrugClass getDrugClassByName(String name){
+    private DrugClass getDrugClassByName(String name){
         DrugClass result = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -80,12 +80,15 @@ public class DatabaseDrugClassDAOTest {
         }
         finally {
                 try {
-                    if(resultSet!=null)
+                    if(resultSet!=null) {
                         resultSet.close();
-                    if(preparedStatement!=null)
+                    }
+                    if(preparedStatement!=null) {
                         preparedStatement.close();
-                    if(connection!=null)
+                    }
+                    if(connection!=null) {
                         connection.close();
+                    }
                 } catch (SQLException e) {
                     return null;
                 }

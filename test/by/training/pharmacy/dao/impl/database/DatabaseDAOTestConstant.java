@@ -79,4 +79,6 @@ public class DatabaseDAOTestConstant {
     public static final String USER_LOGIN_5 = "vladislav.zavadski99911123qq";
     public static final String USER_FIRST_NAME_3 = "Иван";
     public static final String USER_SECOND_NAME_3 = "Иванов";
+    public static final String USER_LOGIN_6 = "andrei_leshkevich";
+    public static final String GET_PRESCRIPTION_BY_DOCTOR = "select cl.us_login, dr_id, re_doctor, re_id, re_prolong_to, re_request_date, re_clients_comment, re_doctors_comment, dr_name, cl.us_first_name, cl.us_second_name, doc.us_first_name as doc_first_name, doc.us_second_name as doc_second_name, doc.us_login as doc_login  from requests_for_prescriptions inner join drugs on dr_id = re_drug_id inner join users as cl on re_client_login = cl.us_login inner join users as doc on re_doctor = doc.us_login WHERE re_doctor=? LIMIT ?, ?;";
 }

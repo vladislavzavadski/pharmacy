@@ -79,55 +79,28 @@ public class DatabaseOrderDAOTest {
         databaseOrderDAO.insertOrder(temp);
     }
 
-    public Order resultSetToOrder(ResultSet resultSet) {
-        Order order = new Order();
-
-        try {
-            order.setId(resultSet.getInt("or_id"));
-        } catch (SQLException e) {
-            order.setId(0);
+    private List<Order> resultSetToOrder(ResultSet resultSet) throws SQLException {
+        List<Order> result = new ArrayList<>();
+        while (resultSet.next()) {
+            Order order = new Order();
+            Drug drug = new Drug();
+            User user = new User();
+            order.setClient(user);
+            order.setDrug(drug);
+            order.setId(resultSet.getInt(TableColumn.ORDER_ID));
+            order.setDrugCount(resultSet.getDouble(TableColumn.ORDER_DRUG_COUNT));
+            order.setDrugDosage(resultSet.getShort(TableColumn.ORDER_DRUG_DOSAGE));
+            order.setOrderDate(resultSet.getDate(TableColumn.ORDER_DATE));
+            order.setOrderStatus(OrderStatus.valueOf(resultSet.getString(TableColumn.ORDER_STATUS).toUpperCase()));
+            user.setLogin(resultSet.getString(TableColumn.USER_LOGIN));
+            user.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            user.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
+            result.add(order);
         }
-
-        try {
-            order.setDrugCount(resultSet.getDouble("or_drug_count"));
-        } catch (SQLException e) {
-            order.setDrugCount(0.0);
-        }
-
-        try {
-            order.setDrugDosage(resultSet.getShort("or_drug_dosage"));
-        } catch (SQLException e) {
-            order.setDrugDosage((short) 0);
-        }
-
-        try {
-            order.setOrderDate(resultSet.getDate("or_date"));
-        } catch (SQLException e) {
-            order.setOrderDate(null);
-        }
-
-        try {
-            order.setOrderStatus(OrderStatus.valueOf(resultSet.getString("or_status").toUpperCase()));
-        } catch (SQLException e) {
-            order.setOrderStatus(null);
-        }
-        try {
-            DatabaseDAO<User> userDAO = new DatabaseUserDAO();
-            order.setClient(userDAO.resultSetToDomain(resultSet));
-        } catch (DaoException e) {
-            order.setClient(null);
-        }
-
-        try {
-            DatabaseDAO<Drug> drugDAO = new DatabaseDrugDAO();
-            order.setDrug(drugDAO.resultSetToDomain(resultSet));
-        } catch (DaoException e) {
-            order.setDrug(null);
-        }
-        return order;
+        return result;
     }
 
-    public Order getOrderById(int drugId){
+    private Order getOrderById(int drugId){
         Order result = null;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
@@ -138,7 +111,7 @@ public class DatabaseOrderDAOTest {
             preparedStatement.setInt(1, drugId);
             resultSet = preparedStatement.executeQuery();
             if(resultSet.next()) {
-                result = resultSetToOrder(resultSet);
+                result = resultSetToOrder(resultSet).get(0);
             }
             return result;
 
@@ -147,12 +120,15 @@ public class DatabaseOrderDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }
@@ -160,8 +136,8 @@ public class DatabaseOrderDAOTest {
 
     }
 
-    public List<Order> getOrderList(String query, Object param, int limit, int startFrom){
-        List<Order> result = new ArrayList<>();
+    private List<Order> getOrderList(String query, Object param, int limit, int startFrom){
+        List<Order> result;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -172,9 +148,9 @@ public class DatabaseOrderDAOTest {
             preparedStatement.setInt(2, limit);
             preparedStatement.setInt(3, startFrom);
             resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                result.add(resultSetToOrder(resultSet));
-            }
+
+            result = resultSetToOrder(resultSet);
+
             return result;
 
         } catch (SQLException e) {
@@ -182,12 +158,15 @@ public class DatabaseOrderDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }

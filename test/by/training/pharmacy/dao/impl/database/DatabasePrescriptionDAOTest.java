@@ -69,70 +69,36 @@ public class DatabasePrescriptionDAOTest {
         databasePrescriptionDAO.insertPrescription(temp);
     }
 
-    public Prescription resultSetToPrescription(ResultSet resultSet) {
-        Prescription prescription = new Prescription();
-        User doctor = new User();
-        prescription.setDoctor(doctor);
-        try {
-            prescription.setAppointmentDate(resultSet.getDate("pr_appointment_date"));
-        } catch (SQLException e) {
-            prescription.setAppointmentDate(null);
+    private List<Prescription> resultSetToPrescription(ResultSet resultSet) throws SQLException {
+        List<Prescription> result = new ArrayList<>();
+        while (resultSet.next()) {
+            Prescription prescription = new Prescription();
+            User doctor = new User();
+            User client = new User();
+            Drug drug = new Drug();
+            prescription.setDoctor(doctor);
+            prescription.setClient(client);
+            prescription.setDoctor(doctor);
+            prescription.setAppointmentDate(resultSet.getDate(TableColumn.PRESCRIPTION_APPOINTMENT_DATE));
+            prescription.setExpirationDate(resultSet.getDate(TableColumn.PRESCRIPTION_EXPIRATION_DATE));
+            prescription.setDrugCount(resultSet.getShort(TableColumn.PRESCRIPTION_DRUG_COUNT));
+            prescription.setDrugDosage(resultSet.getShort(TableColumn.PRESCRIPTION_DRUG_DOSAGE));
+            doctor.setFirstName(resultSet.getString(TableColumn.DOCTOR_FIRST_NAME));
+            doctor.setSecondName(resultSet.getString(TableColumn.DOCTOR_SECOND_NAME));
+            doctor.setLogin(resultSet.getString(TableColumn.DOCTOR_LOGIN));
+            drug.setName(resultSet.getString(TableColumn.DRUG_NAME));
+            drug.setId(resultSet.getInt(TableColumn.DRUG_ID));
+            client.setLogin(resultSet.getNString(TableColumn.USER_LOGIN));
+            client.setFirstName(resultSet.getString(TableColumn.USER_FIRST_NAME));
+            client.setSecondName(resultSet.getString(TableColumn.USER_SECOND_NAME));
+            result.add(prescription);
         }
+        return result;
 
-        try {
-            prescription.setExpirationDate(resultSet.getDate("pr_expiration_date"));
-        } catch (SQLException e) {
-            prescription.setExpirationDate(null);
-        }
-
-        try {
-            prescription.setDrugCount(resultSet.getShort("pr_drug_count"));
-        } catch (SQLException e) {
-            prescription.setDrugCount((short) 0);
-        }
-
-        try {
-            prescription.setDrugDosage(resultSet.getShort("pr_drug_dosage"));
-        } catch (SQLException e) {
-            prescription.setDrugDosage((short) 0);
-        }
-
-        try {
-            DatabaseDAO<User> databaseDAO = new DatabaseUserDAO();
-            prescription.setClient(databaseDAO.resultSetToDomain(resultSet));
-        } catch (DaoException e) {
-            prescription.setClient(null);
-        }
-
-        try {
-            DatabaseDAO<Drug> databaseDAO = new DatabaseDrugDAO();
-            prescription.setDrug(databaseDAO.resultSetToDomain(resultSet));
-        } catch (DaoException e) {
-            prescription.setDrug(null);
-        }
-
-        try {
-            doctor.setFirstName(resultSet.getString("doc_first_name"));
-        } catch (SQLException e) {
-            doctor.setFirstName(null);
-        }
-
-        try {
-            doctor.setSecondName(resultSet.getString("doc_second_name"));
-        } catch (SQLException e) {
-            doctor.setSecondName(null);
-        }
-        try {
-            doctor.setLogin(resultSet.getString("doc_login"));
-        } catch (SQLException e) {
-            doctor.setLogin(null);
-        }
-
-        return prescription;
     }
 
-    public List<Prescription> getPrescriptionList(String query, Object param, int limit, int startFrom){
-        List<Prescription> result = new ArrayList<>();
+    private List<Prescription> getPrescriptionList(String query, Object param, int limit, int startFrom){
+        List<Prescription> result;
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -143,9 +109,9 @@ public class DatabasePrescriptionDAOTest {
             preparedStatement.setInt(2, limit);
             preparedStatement.setInt(3, startFrom);
             resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                result.add(resultSetToPrescription(resultSet));
-            }
+
+            result = resultSetToPrescription(resultSet);
+
             return result;
 
         } catch (SQLException e) {
@@ -153,12 +119,15 @@ public class DatabasePrescriptionDAOTest {
         }
         finally {
             try {
-                if(resultSet!=null)
+                if(resultSet!=null) {
                     resultSet.close();
-                if(preparedStatement!=null)
+                }
+                if(preparedStatement!=null) {
                     preparedStatement.close();
-                if(connection!=null)
+                }
+                if(connection!=null) {
                     connection.close();
+                }
             } catch (SQLException e) {
                 return null;
             }

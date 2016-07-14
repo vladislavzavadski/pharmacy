@@ -27,9 +27,6 @@ public class DatabaseDrugManufacturerDao implements DrugManufacturerDAO {
     private static final String DELETE_MANUFACTURER_QUERY = "DELETE FROM drugs_manufactures where dm_id=?;";
     private static final Logger logger = LogManager.getLogger(DatabaseDrugManufacturerDao.class);
 
-    protected DatabaseDrugManufacturerDao() throws DaoException {
-
-    }
 
     @Override
     public List<DrugManufacturer> getManufacturesByCountry(String country, int limit, int startFrom) throws DaoException {
@@ -47,7 +44,7 @@ public class DatabaseDrugManufacturerDao implements DrugManufacturerDAO {
     @Override
     public List<DrugManufacturer> getManufacturesByName(String name, int limit, int startFrom) throws DaoException {
         List<DrugManufacturer> drugManufacturers = null;
-        try (DatabaseOperation databaseOperation = new DatabaseOperation(GET_MANUFACTURER_BY_NAME_QUERY, '%'+name+'%', limit, startFrom)){
+        try (DatabaseOperation databaseOperation = new DatabaseOperation(GET_MANUFACTURER_BY_NAME_QUERY, name, limit, startFrom)){
             ResultSet resultSet = databaseOperation.invokeReadOperation();
             drugManufacturers = resultSetToDrugManufacturer(resultSet);
         } catch (Exception e) {
@@ -106,10 +103,10 @@ public class DatabaseDrugManufacturerDao implements DrugManufacturerDAO {
         List<DrugManufacturer> result = new ArrayList<>();
         while (resultSet.next()) {
             DrugManufacturer drugManufacturer = new DrugManufacturer();
-            drugManufacturer.setId(resultSet.getInt("dm_id"));
-            drugManufacturer.setName(resultSet.getString("dm_name"));
-            drugManufacturer.setDescription(resultSet.getString("dm_description"));
-            drugManufacturer.setCountry(resultSet.getString("dm_country"));
+            drugManufacturer.setId(resultSet.getInt(TableColumn.DRUG_MANUFACTURE_ID));
+            drugManufacturer.setName(resultSet.getString(TableColumn.DRUG_MANUFACTURE_NAME));
+            drugManufacturer.setDescription(resultSet.getString(TableColumn.DRUG_MANUFACTURE_DESCRIPTION));
+            drugManufacturer.setCountry(resultSet.getString(TableColumn.DRUG_MANUFACTURE_COUNTRY));
             result.add(drugManufacturer);
         }
         return result;

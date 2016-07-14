@@ -33,9 +33,6 @@ public class DatabaseDrugDAO implements DrugDAO {
     private static final String DELETE_DRUG_QUERY = "delete from drugs where dr_id=?;";
     private static final Logger logger = LogManager.getLogger(DatabaseDrugClassDAO.class);
 
-    protected DatabaseDrugDAO() throws DaoException {
-
-    }
 
     @Override
     public Drug getDrugById(int drugId) throws DaoException {
@@ -59,7 +56,7 @@ public class DatabaseDrugDAO implements DrugDAO {
     @Override
     public List<Drug> getDrugsByName(String name, int limit, int startFrom) throws DaoException {
         List<Drug> drugs;
-        try (DatabaseOperation databaseOperation = new DatabaseOperation(GET_DRUGS_BY_NAME_QUERY, "%"+name+"%", limit, startFrom);){
+        try (DatabaseOperation databaseOperation = new DatabaseOperation(GET_DRUGS_BY_NAME_QUERY, name, limit, startFrom);){
             ResultSet resultSet = databaseOperation.invokeReadOperation();
             drugs = resultSetToDrug(resultSet);
             return drugs;
@@ -153,25 +150,25 @@ public class DatabaseDrugDAO implements DrugDAO {
             DrugClass drugClass = new DrugClass();
             drug.setDrugManufacturer(drugManufacturer);
             drug.setDrugClass(drugClass);
-            drug.setId(resultSet.getInt("dr_id"));
-            drug.setName(resultSet.getString("dr_name"));
-            drug.setDrugImage(resultSet.getBytes("dr_image"));
-            drug.setDescription(resultSet.getString("dr_description"));
-            drug.setPrice(resultSet.getFloat("dr_price"));
-            drug.setActiveSubstance(resultSet.getString("dr_active_substance"));
-            drug.setPrescriptionEnable(resultSet.getBoolean("dr_prescription_enable"));
-            drug.setInStock(resultSet.getBoolean("dr_in_stock"));
-            drug.setType(DrugType.valueOf(resultSet.getString("dr_type").toUpperCase()));
-            String[] dosages = resultSet.getString("dr_dosage").split(",");
+            drug.setId(resultSet.getInt(TableColumn.DRUG_ID));
+            drug.setName(resultSet.getString(TableColumn.DRUG_NAME));
+            drug.setDrugImage(resultSet.getBytes(TableColumn.DRUG_IMAGE));
+            drug.setDescription(resultSet.getString(TableColumn.DRUG_DESCRIPTION));
+            drug.setPrice(resultSet.getFloat(TableColumn.DRUG_PRICE));
+            drug.setActiveSubstance(resultSet.getString(TableColumn.DRUG_ACTIVE_SUBSTANCE));
+            drug.setPrescriptionEnable(resultSet.getBoolean(TableColumn.DRUG_PRESCRIPTION_ENABLE));
+            drug.setInStock(resultSet.getBoolean(TableColumn.DRUG_IN_STOCK));
+            drug.setType(DrugType.valueOf(resultSet.getString(TableColumn.DRUG_TYPE).toUpperCase()));
+            String[] dosages = resultSet.getString(TableColumn.DRUG_DOSAGE).split(",");
             for (String dosage : dosages) {
                 drug.getDosages().add(Integer.parseInt(dosage));
             }
-            drugManufacturer.setId(resultSet.getInt("dm_id"));
-            drugManufacturer.setName(resultSet.getString("dm_name"));
-            drugManufacturer.setDescription(resultSet.getString("dm_description"));
-            drugManufacturer.setCountry(resultSet.getString("dm_country"));
-            drugClass.setName(resultSet.getString("dr_class_name"));
-            drugClass.setDescription(resultSet.getString("dr_class_description"));
+            drugManufacturer.setId(resultSet.getInt(TableColumn.DRUG_MANUFACTURE_ID));
+            drugManufacturer.setName(resultSet.getString(TableColumn.DRUG_MANUFACTURE_NAME));
+            drugManufacturer.setDescription(resultSet.getString(TableColumn.DRUG_MANUFACTURE_DESCRIPTION));
+            drugManufacturer.setCountry(resultSet.getString(TableColumn.DRUG_MANUFACTURE_COUNTRY));
+            drugClass.setName(resultSet.getString(TableColumn.DRUG_CLASS_NAME));
+            drugClass.setDescription(resultSet.getString(TableColumn.DRUG_CLASS_DESCRIPTION));
             result.add(drug);
         }
         return result;

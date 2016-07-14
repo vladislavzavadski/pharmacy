@@ -69,8 +69,9 @@ public class ConnectionPool {
     public synchronized Connection takeConnection() throws ConnectionPoolException{
         Connection connection;
 
-        if(freeConnections.isEmpty())
+        if(freeConnections.isEmpty()) {
             throw new ConnectionPoolException("There are no free connections");
+        }
 
         connection = freeConnections.remove(freeConnections.size()-1);
 
@@ -101,30 +102,6 @@ public class ConnectionPool {
         }
     }
 
-    public void closeConnection(Connection connection, Statement statement, ResultSet resultSet){
-        try {
-            if(resultSet!=null)
-                resultSet.close();
-            if(statement!=null)
-                statement.close();
-            if(connection!=null)
-                connection.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void closeConnection(Connection connection, Statement statement){
-        try {
-            if(statement!=null)
-                statement.close();
-            if(connection!=null)
-                connection.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(ConnectionPool.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     private class PooledConnection implements Connection{
 
         private Connection connection;
@@ -139,12 +116,14 @@ public class ConnectionPool {
 
         @Override
         public void close() throws SQLException {
-            //TODO:Написать закрытие соединения.
-            if(connection.isClosed())
-                throw new SQLException("Given connection already closed");
 
-            if(connection.isReadOnly())
+            if(connection.isClosed()) {
+                throw new SQLException("Given connection already closed");
+            }
+
+            if(connection.isReadOnly()) {
                 connection.setReadOnly(false);
+            }
 
             if(!usedConnections.remove(this)){
                 throw new SQLException("Error deleting connection from used connections pool");
